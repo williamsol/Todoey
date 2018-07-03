@@ -14,9 +14,16 @@ class TodoListViewController: UITableViewController {
 
     var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
     
+    // Create a UserDefaults to persistently store data (i.e. even when the app terminates)
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        // Retrieve the array that is stored in UserDefaults upon creating a new item
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
     }
     
     //MARK - TableView DataSource Methods
@@ -66,13 +73,20 @@ class TodoListViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
-            // What will happen once the user clicks the Add Item button on our UIAlert
+            // When the user clicks the Add Item button, append the contents of the text field to our array
             self.itemArray.append(textField.text!)
+            
+            // Store the array in the UserDefaults under the key "TodoListArray"
+            // These data will be assigned to the array upon viewDidLoad()
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            
+            // Reload the table view to display the array contents
             self.tableView.reloadData()
         }
         
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create new item"
+            // Note that the scope of alertTextField is confined to this closure; we need the textField variable, so that we can append its contents to the array once the user clicks the Add Item button (above)
             textField = alertTextField
         }
         
