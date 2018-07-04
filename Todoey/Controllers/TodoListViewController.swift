@@ -15,29 +15,15 @@ class TodoListViewController: UITableViewController {
     // Declare an array of Item objects ("Item" refers to our Data Model, which has "title" and "done" fields)
     var itemArray = [Item]()
     
-    // Create a UserDefaults to persistently store data (i.e. even when the app terminates)
-    let defaults = UserDefaults.standard
+    // Create a file path to the documents folder, and create a custom .plist file
+    // This path will be unique for a particular app on a particular device
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "Buy Eggos"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "Destroy Demogorgon"
-        itemArray.append(newItem3)
-        
-        // Retrieve the array that is stored in UserDefaults
-        // Data is stored in UserDefaults every time we create a new item
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-        }
+        // Retrieve the data that is stored in dataFilePath
+        loadItems()
         
     }
     
@@ -81,14 +67,16 @@ class TodoListViewController: UITableViewController {
         // This information gets stored in the "done" field of the respective Item object in itemArray
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        // Store itemArray in the Items.plist file that is referenced by dataFilePath
+        // This array will be retrieved upon viewDidLoad()
+        // saveItems() also reloads the table view to reflected the updated data in ItemArray
+        saveItems()
+        
 //        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .none
 //        } else {
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
 //        }
-        
-        // Re-trigger the tableView(... cellForRowAt ...) delegate method to update checkmarks
-        tableView.reloadData()
         
         // Avoid the selected row from remaining highlighted (by deselecting it)
         tableView.deselectRow(at: indexPath, animated: true)
@@ -111,12 +99,10 @@ class TodoListViewController: UITableViewController {
             newItem.title = textField.text!
             self.itemArray.append(newItem)
             
-            // Store the itemArray in UserDefaults under the key "TodoListArray"
+            // Store itemArray in the Items.plist file that is referenced by dataFilePath
             // This array will be retrieved upon viewDidLoad()
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            
-            // Reload the table view to display the updated data in the updated itemArray
-            self.tableView.reloadData()
+            // saveItems() also reloads the table view to reflected the updated data in ItemArray
+            self.saveItems()
             
         }
         
@@ -130,6 +116,46 @@ class TodoListViewController: UITableViewController {
         
         present(alert, animated: true, completion: nil)
         
+    }
+    
+    //MARK - Model Manipulation Method
+    
+    // This method gets called by tableView(... didSelectRowAt ...) and by addButtonPressed(...)
+    func saveItems() {
+        
+        let encoder = PropertyListEncoder()
+        
+        // Note that encoder.encode() and data.write() can throw errors, so we need to use a do-catch block
+        do {
+            // Try to encode the data
+            let data = try encoder.encode(itemArray)
+            // Try to write the encoded data to Items.plist
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+        
+        // Reload the table view to reflect the updated data in itemArray
+        // This re-triggers the delegate method tableView(... cellForRowAt ...)
+        tableView.reloadData()
+    }
+    
+    // This method gets called by viewDidLoad()
+    func loadItems() {
+        
+        // Use optional binding to safely unwrap the Swift optional
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            
+            let decoder = PropertyListDecoder()
+            
+            // Note that decoder.decode() can throw an error, so we need to use a do-catch block
+            do {
+                // Try to decode the data, of specified data type [Item]
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding item array, \(error)")
+            }
+        }
     }
     
 }
