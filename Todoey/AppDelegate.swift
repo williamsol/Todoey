@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,50 +17,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // This function gets called when the app first launches
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
+        //print(Realm.Configuration.defaultConfiguration.fileURL)
+        
+        do {
+            // Try creating a new realm (persistent storage/container) here, just to see if there are any errors; this realm is not actually used
+            _ = try Realm()
+        } catch {
+            print("Error initialising new realm, \(error)")
+        }
+        
         return true
     }
-
-    // This function gets called when the app is terminated, either manually or by the system (because it needs to reallocate memory)
-    func applicationWillTerminate(_ application: UIApplication) {
-        self.saveContext()
-    }
-    
-    // MARK: - Core Data stack
-    
-    // A "lazy" variable is assigned a value only when it is needed / when you try to use it
-    // NSPersistentContainer is where we will store all our data; by default, it is a SQLite database
-    lazy var persistentContainer: NSPersistentContainer = {
-        
-        // The name of our NSPersistentContainer must match that of our data model
-        let container = NSPersistentContainer(name: "DataModel")
-        
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
-        return container
-    }()
-    
-    // MARK: - Core Data Saving support
-    
-    // This function provides some support in saving our data when the app gets terminated
-    func saveContext () {
-        
-        // Context is a temporary area where you can change and update your data before it is saved to the container
-        // Context is similar to the "staging area" in Git and GitHub
-        let context = persistentContainer.viewContext
-        
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
-        }
-    }
-
 
 }
 
