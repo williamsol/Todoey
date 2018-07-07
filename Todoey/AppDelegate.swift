@@ -17,10 +17,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // This function gets called when the app first launches
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-        //print(Realm.Configuration.defaultConfiguration.fileURL)
+        // Uncomment this line in order to print the Realm file location to the debug area upon launching of the app
+         print(Realm.Configuration.defaultConfiguration.fileURL)
         
+        // Try creating a new realm (persistent storage/container) here, just to see if there are any errors; this realm is not actually used
         do {
-            // Try creating a new realm (persistent storage/container) here, just to see if there are any errors; this realm is not actually used
             _ = try Realm()
         } catch {
             print("Error initialising new realm, \(error)")

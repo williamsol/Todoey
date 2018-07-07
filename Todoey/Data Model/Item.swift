@@ -9,10 +9,8 @@
 import Foundation
 import RealmSwift
 
-// "Object" is a class used to define Realm model objects
 class Item: Object {
     
-    // "@objc dynamic" allows Realm to monitor any changes to the "title", "done" and "dateCreated" properties
     @objc dynamic var title : String = ""
     @objc dynamic var done : Bool = false
     @objc dynamic var dateCreated : Date?
